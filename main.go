@@ -13,8 +13,8 @@ func main() {
 	lg := log.New()
 	lg.Formatter = customFormatter
 
-	lg.Info("eApi Service Start")
-	defer lg.Info("eApi Service Stop")
+	lg.Info("vigo5190/go-socks5 Starter")
+	defer lg.Info("vigo5190/go-socks5 Stop")
 
 	lg.SetLevel(log.DebugLevel)
 
