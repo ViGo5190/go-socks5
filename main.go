@@ -2,7 +2,7 @@ package main
 
 import (
 	log "github.com/sirupsen/logrus"
-	"github.com/vigo5190/go-socks5/proxy"
+	proxy2 "github.com/vigo5190/go-socks5/proxy"
 )
 
 func main() {
@@ -18,8 +18,9 @@ func main() {
 
 	lg.SetLevel(log.DebugLevel)
 
-	server := proxy.New(lg)
-
-	server.ListenAndServe("tcp", "127.0.0.1:8008")
-
+	proxy := proxy2.Proxy{
+		Listen: "127.0.0.1:8008",
+		Log:    lg,
+	}
+	proxy.Start()
 }

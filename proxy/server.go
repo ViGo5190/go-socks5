@@ -35,7 +35,7 @@ func (s *Server) Serve(listener net.Listener) error {
 		conn, err := listener.Accept()
 		if err != nil {
 			s.Logger.Error(err)
-			return err
+			//return err
 		}
 		c := NewConnection(conn, s.Logger)
 		go c.Serve()

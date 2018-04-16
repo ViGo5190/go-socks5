@@ -22,12 +22,22 @@ var (
 	rspCommandNotSupportMsg = errors.New("command not support")
 	rspAddressToShort       = errors.New("address to short")
 	rspAddressToLong        = errors.New("address to long")
+	rspEmptyIp              = errors.New("empty ip")
+	rspEmptyPort            = errors.New("empty port")
 )
 
 func (r *Rspc) parseAddr(addr string) (err error) {
 
 	host, port, err := net.SplitHostPort(addr)
+	if err != nil {
+		return
+	}
+
 	ip := net.ParseIP(host)
+
+	if ip == nil {
+		return rspEmptyIp
+	}
 
 	if ipv4 := ip.To4(); ipv4 != nil {
 		r.addressType = addressTypeIPv4
@@ -39,7 +49,7 @@ func (r *Rspc) parseAddr(addr string) (err error) {
 
 	prt, err := strconv.Atoi(port)
 	if err != nil {
-		return rspServerErrorMsg
+		return rspEmptyPort
 	}
 	r.port = uint16(prt)
 	return

@@ -41,12 +41,10 @@ func NewConnection(conn net.Conn, logger *log.Logger) *Connection {
 func (c *Connection) Serve() (err error) {
 	defer c.conn.Close()
 
-	var n int64
 	if err = binary.Read(c.conn, binary.BigEndian, &c.ver); err != nil {
 		c.logger.Error(err)
 		return
 	}
-	n++
 
 	if c.ver != socks5Ver {
 		err = errors.New("unsupported protocol version")
@@ -58,7 +56,11 @@ func (c *Connection) Serve() (err error) {
 		return err
 	}
 
-	return c.cmd()
+	err = c.cmd()
+	if err != nil {
+		c.logger.Error(err)
+	}
+	return
 }
 
 func (c *Connection) handshake() (err error) {
@@ -86,7 +88,8 @@ func (c *Connection) handshake() (err error) {
 }
 
 func (c *Connection) handleNoAuth() (err error) {
-	c.logger.Info("handleNoAuth")
+	c.logger.Debug("handleNoAuth")
+	c.logger.Debug(c.conn.RemoteAddr().String())
 
 	remAddrstring := c.conn.RemoteAddr().String()
 
@@ -118,6 +121,7 @@ func (c *Connection) cmd() (err error) {
 
 	err, rsp := cmd.Fire()
 	if err != nil {
+
 		return err
 	}
 

@@ -55,7 +55,7 @@ func (c *Command) connect() (err error, rsp byte) {
 	}
 
 	err = r.parseAddr(c.connOut.LocalAddr().String())
-	if err != nil && err == rspServerErrorMsg {
+	if err != nil {
 		return nil, rspServerError
 	}
 
@@ -78,7 +78,7 @@ func (c *Command) connect() (err error, rsp byte) {
 	return
 }
 
-func (c *Command) proxy() (chan error) {
+func (c *Command) proxy() chan error {
 	errCh := make(chan error, 2)
 	c.wg.Add(2)
 	go c.proxyWithDirection(c.conn, c.connOut, errCh)
@@ -96,5 +96,4 @@ func (c *Command) proxyWithDirection(to io.Writer, from io.Reader, errCh chan er
 		conn.Close()
 	}
 	errCh <- err
-
 }
