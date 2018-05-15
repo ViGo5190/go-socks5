@@ -6,6 +6,7 @@ import (
 	"sync"
 )
 
+//Command struct for command
 type Command struct {
 	rqst    *Rqst
 	conn    net.Conn
@@ -23,32 +24,33 @@ const (
 	rspCommandNotSupport = 0x07
 )
 
-func (c *Command) Fire() (err error, rsp byte) {
+//Fire method which check command and run it
+func (c *Command) Fire() (rsp byte, err error) {
 
 	switch c.rqst.cmd {
 	case cmdConnect:
 		return c.connect()
 	case cmdBind:
-		return nil, rspCommandNotSupport
+		return rspCommandNotSupport, nil
 	case cmdUDP:
-		return nil, rspCommandNotSupport
+		return rspCommandNotSupport, nil
 	default:
-		return nil, rspCommandNotSupport
+		return rspCommandNotSupport, nil
 	}
 }
 
-func (c *Command) connect() (err error, rsp byte) {
+func (c *Command) connect() (rsp byte, err error) {
 	to := c.rqst.FQDN()
 
 	if c.connOut == nil {
 		if c.connOut, err = net.Dial("tcp", to); err != nil {
-			return err, rspServerError
+			return rspServerError, err
 		}
 	}
 
 	defer c.connOut.Close()
 
-	r := &Rspc{
+	r := &Rsps{
 		socksVer: socks5Ver,
 		rsp:      rspSuccess,
 		reserved: reservedSymbol,
@@ -56,23 +58,23 @@ func (c *Command) connect() (err error, rsp byte) {
 
 	err = r.parseAddr(c.connOut.LocalAddr().String())
 	if err != nil {
-		return nil, rspServerError
+		return rspServerError, nil
 	}
 
 	buf, err := r.Bytes()
 
 	if err != nil {
-		return err, rspServerError
+		return rspServerError, err
 	}
 
 	if _, err = c.conn.Write(buf); err != nil {
-		return err, rspServerError
+		return rspServerError, err
 	}
 
 	errCh := c.proxy()
 
 	if err := <-errCh; err != nil {
-		return err, rspServerError
+		return rspServerError, err
 	}
 
 	return
@@ -81,8 +83,8 @@ func (c *Command) connect() (err error, rsp byte) {
 func (c *Command) proxy() chan error {
 	errCh := make(chan error, 2)
 	c.wg.Add(2)
-	go c.proxyWithDirection(c.conn, c.connOut, errCh)
 	go c.proxyWithDirection(c.connOut, c.conn, errCh)
+	go c.proxyWithDirection(c.conn, c.connOut, errCh)
 	c.wg.Wait()
 
 	return errCh

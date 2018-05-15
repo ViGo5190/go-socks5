@@ -6,39 +6,37 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+//ServerProxifier inteface for proxy runner
 type ServerProxifier interface {
 	ListenAndServe(network, address string) error
 	Serve(li net.Listener) error
 }
 
+//Server container for data
 type Server struct {
 	Logger *log.Logger
 }
 
-func New(logger *log.Logger) *Server {
-	return &Server{
-		Logger: logger,
-	}
-}
-
+//ListenAndServe create listener and serve
 func (s *Server) ListenAndServe(network, address string) error {
 	listener, err := net.Listen(network, address)
-	defer listener.Close()
 	if err != nil {
 		return err
 	}
-	return s.Serve(listener)
+	s.Serve(listener)
+	return nil
 }
 
-func (s *Server) Serve(listener net.Listener) error {
+//Serve serve listener -> connections
+func (s *Server) Serve(listener net.Listener) {
+	defer listener.Close()
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
 			s.Logger.Error(err)
-			//return err
+			continue
 		}
 		c := NewConnection(conn, s.Logger)
 		go c.Serve()
-		//go s.ServeConn(conn)
 	}
 }

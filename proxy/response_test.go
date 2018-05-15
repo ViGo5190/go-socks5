@@ -5,7 +5,7 @@ import (
 )
 
 func TestParseAddrIpV4(t *testing.T) {
-	r := &Rspc{
+	r := &Rsps{
 		socksVer: socks5Ver,
 		rsp:      rspSuccess,
 		reserved: reservedSymbol,
@@ -29,7 +29,7 @@ func TestParseAddrIpV4(t *testing.T) {
 }
 
 func TestParseAddrIpV6(t *testing.T) {
-	r := &Rspc{
+	r := &Rsps{
 		socksVer: socks5Ver,
 		rsp:      rspSuccess,
 		reserved: reservedSymbol,
@@ -53,7 +53,7 @@ func TestParseAddrIpV6(t *testing.T) {
 }
 
 func TestSplitHostError(t *testing.T) {
-	r := &Rspc{
+	r := &Rsps{
 		socksVer: socks5Ver,
 		rsp:      rspSuccess,
 		reserved: reservedSymbol,
@@ -66,7 +66,7 @@ func TestSplitHostError(t *testing.T) {
 }
 
 func TestSplitHostError2(t *testing.T) {
-	r := &Rspc{
+	r := &Rsps{
 		socksVer: socks5Ver,
 		rsp:      rspSuccess,
 		reserved: reservedSymbol,
@@ -79,27 +79,27 @@ func TestSplitHostError2(t *testing.T) {
 }
 
 func TestParseIPEmptyIp(t *testing.T) {
-	r := &Rspc{
+	r := &Rsps{
 		socksVer: socks5Ver,
 		rsp:      rspSuccess,
 		reserved: reservedSymbol,
 		addr:     []byte{},
 	}
 	err := r.parseAddr("ya.ru:80")
-	if err != rspEmptyIp {
-		t.Errorf("Should '%v', got '%v'", rspEmptyIp, err.Error())
+	if err != errRspEmptyIP {
+		t.Errorf("Should '%v', got '%v'", errRspEmptyIP, err.Error())
 	}
 }
 
 func TestParsePortErr(t *testing.T) {
-	r := &Rspc{
+	r := &Rsps{
 		socksVer: socks5Ver,
 		rsp:      rspSuccess,
 		reserved: reservedSymbol,
 		addr:     []byte{},
 	}
 	err := r.parseAddr("8.8.8.8:foo")
-	if err != rspEmptyPort {
-		t.Errorf("Should '%v', got '%v'", rspEmptyPort, err.Error())
+	if err != errRspEmptyPort {
+		t.Errorf("Should '%v', got '%v'", errRspEmptyPort, err.Error())
 	}
 }

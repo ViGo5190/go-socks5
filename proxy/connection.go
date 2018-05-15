@@ -20,6 +20,7 @@ const (
 	authNoMethods = 0xFF
 )
 
+//Connection container for data
 type Connection struct {
 	conn   net.Conn
 	ctx    *context.Context
@@ -29,6 +30,7 @@ type Connection struct {
 	methods []byte
 }
 
+//NewConnection return new connection
 func NewConnection(conn net.Conn, logger *log.Logger) *Connection {
 	ctx := context.Background()
 	return &Connection{
@@ -38,6 +40,7 @@ func NewConnection(conn net.Conn, logger *log.Logger) *Connection {
 	}
 }
 
+//Serve serve connection: handshake + cmd
 func (c *Connection) Serve() (err error) {
 	defer c.conn.Close()
 
@@ -119,7 +122,7 @@ func (c *Connection) cmd() (err error) {
 		conn: c.conn,
 	}
 
-	err, rsp := cmd.Fire()
+	rsp, err := cmd.Fire()
 	if err != nil {
 
 		return err

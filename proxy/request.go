@@ -1,7 +1,7 @@
 package proxy
 
 import (
-	binary "encoding/binary"
+	"encoding/binary"
 	"errors"
 	"io"
 	"net"
@@ -17,10 +17,14 @@ const (
 )
 
 var (
+	//ErrorAddressTypeNotSupported address type not supported
 	ErrorAddressTypeNotSupported = errors.New("address type not supported")
-	ErrorWrongReservedSymbol     = errors.New("wrong reserved symbol")
+
+	//ErrorWrongReservedSymbol wrong reserved symbol
+	ErrorWrongReservedSymbol = errors.New("wrong reserved symbol")
 )
 
+//Rqst container for data
 type Rqst struct {
 	socksVer    byte
 	cmd         byte
@@ -29,6 +33,22 @@ type Rqst struct {
 
 	addr []byte
 	port uint16
+}
+
+//FQDN return fqdn for given data
+func (r *Rqst) FQDN() string {
+	var host string
+	switch r.addressType {
+	case addressTypeIPv4:
+		host = net.IPv4(r.addr[0], r.addr[1], r.addr[2], r.addr[3]).String()
+	case addressTypeDomain:
+		host = string(r.addr)
+	case addressTypeIPv6:
+		host = net.IP(r.addr).String()
+	default:
+		host = "<unsupported address type>"
+	}
+	return host + ":" + strconv.Itoa(int(r.port))
 }
 
 func (r *Rqst) fromReader(src io.Reader) (err error) {
@@ -77,19 +97,4 @@ func (r *Rqst) fromReader(src io.Reader) (err error) {
 	}
 
 	return
-}
-
-func (r *Rqst) FQDN() string {
-	var host string
-	switch r.addressType {
-	case addressTypeIPv4:
-		host = net.IPv4(r.addr[0], r.addr[1], r.addr[2], r.addr[3]).String()
-	case addressTypeDomain:
-		host = string(r.addr)
-	case addressTypeIPv6:
-		host = net.IP(r.addr).String()
-	default:
-		host = "<unsupported address type>"
-	}
-	return host + ":" + strconv.Itoa(int(r.port))
 }
