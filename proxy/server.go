@@ -41,5 +41,4 @@ func (s *Server) Serve(listener net.Listener) error {
 		go c.Serve()
 		//go s.ServeConn(conn)
 	}
-	return nil
 }

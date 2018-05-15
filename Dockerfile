@@ -1,4 +1,4 @@
-FROM golang:1.10 as builder
+FROM golang:1.10.2 as builder
 WORKDIR /go/src/github.com/vigo5190/go-socks5
 COPY . .
 RUN CGO_ENABLED=0 GOOS=linux make
