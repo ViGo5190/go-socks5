@@ -1,5 +1,4 @@
 all: test vet build
-
 GOFILES=`go list ./... | grep -v vendor`
 
 test:
@@ -9,7 +8,7 @@ bench:
 	go test -bench=. -benchmem $(GOFILES)
 
 cover:
-	go test -coverprofile=cover.out ./... && go tool cover -html=cover.out -o cover.html
+	go test -coverprofile=cover.out $(GOFILES) && go tool cover -html=cover.out -o cover.html
 
 build: test
 	go build .
@@ -26,6 +25,7 @@ lint:
 docker:
 	docker build -t gosocks5 .
 
-
+travis:  test
+	echo "done all"
 
 pre: fmt lint vet test

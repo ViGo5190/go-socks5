@@ -1,0 +1,12 @@
+language: go
+go: 1.10.2
+env: CGO_ENABLED=0
+script: make travis
+
+sudo: false
+os:
+    - linux
+    - osx
+matrix:
+  include:
+    - go: 1.10.2
