@@ -17,6 +17,8 @@ matrix:
   include:
     - go: 1.10.2
 
+before_install:
+  - go get github.com/golang/lint/golint
 
 after_success:
   - if [[ "$TRAVIS_BRANCH" == "master" ]]; then
