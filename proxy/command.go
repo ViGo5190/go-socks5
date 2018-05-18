@@ -71,31 +71,29 @@ func (c *Command) connect() (rsp byte, err error) {
 		return rspServerError, err
 	}
 
-	errCh := c.proxy()
-
-	if err := <-errCh; err != nil {
-		return rspServerError, err
-	}
+	c.proxy()
 
 	return
 }
 
-func (c *Command) proxy() chan error {
-	errCh := make(chan error, 2)
+func (c *Command) proxy() {
 	c.wg.Add(2)
-	go c.proxyWithDirection(c.connOut, c.conn, errCh)
-	go c.proxyWithDirection(c.conn, c.connOut, errCh)
+
+	go func(to io.Writer, from io.Reader) {
+		defer c.wg.Done()
+		io.Copy(to, from)
+		if conn, ok := to.(net.Conn); ok {
+			conn.Close()
+		}
+	}(c.connOut, c.conn)
+
+	go func(to io.Writer, from io.Reader) {
+		defer c.wg.Done()
+		io.Copy(to, from)
+		if conn, ok := from.(net.Conn); ok {
+			conn.Close()
+		}
+	}(c.conn, c.connOut)
+
 	c.wg.Wait()
-
-	return errCh
-}
-
-func (c *Command) proxyWithDirection(to io.Writer, from io.Reader, errCh chan error) {
-	defer c.wg.Done()
-
-	_, err := io.Copy(to, from)
-	if conn, ok := to.(net.Conn); ok {
-		conn.Close()
-	}
-	errCh <- err
 }

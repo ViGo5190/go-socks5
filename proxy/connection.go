@@ -8,6 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"io"
 	"net"
+	"sync"
 )
 
 const (
@@ -41,29 +42,30 @@ func NewConnection(conn net.Conn, logger *log.Logger) *Connection {
 }
 
 //Serve serve connection: handshake + cmd
-func (c *Connection) Serve() (err error) {
+func (c *Connection) Serve(wg *sync.WaitGroup) {
 	defer c.conn.Close()
+	defer wg.Done()
 
-	if err = binary.Read(c.conn, binary.BigEndian, &c.ver); err != nil {
-		c.logger.Error(err)
+	if err := binary.Read(c.conn, binary.BigEndian, &c.ver); err != nil {
+		c.logger.Errorf("Error on read data from connection : %v", err)
 		return
 	}
 
 	if c.ver != socks5Ver {
-		err = errors.New("unsupported protocol version")
+		err := errors.New("unsupported protocol version")
 		c.logger.Error(err)
 		return
 	}
 
-	if err = c.handshake(); err != nil {
-		return err
+	if err := c.handshake(); err != nil {
+		c.logger.Error(err)
+		return
 	}
 
-	err = c.cmd()
+	err := c.cmd()
 	if err != nil {
-		c.logger.Error(err)
+		c.logger.Errorf("Connection.cmd error: %v", err)
 	}
-	return
 }
 
 func (c *Connection) handshake() (err error) {
@@ -104,7 +106,6 @@ func (c *Connection) handleNoAuth() (err error) {
 	_, err = c.conn.Write([]byte{socks5Ver, authNoAuth})
 
 	if err != nil {
-		c.logger.Error(err)
 		return
 	}
 	return

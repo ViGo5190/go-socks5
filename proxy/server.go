@@ -3,7 +3,9 @@ package proxy
 import (
 	"net"
 
+	"context"
 	log "github.com/sirupsen/logrus"
+	"sync"
 )
 
 //ServerProxifier inteface for proxy runner
@@ -15,6 +17,10 @@ type ServerProxifier interface {
 //Server container for data
 type Server struct {
 	Logger *log.Logger
+	ctx    context.Context
+	done   context.CancelFunc
+	closed bool
+	wg     sync.WaitGroup
 }
 
 //ListenAndServe create listener and serve
@@ -29,14 +35,39 @@ func (s *Server) ListenAndServe(network, address string) error {
 
 //Serve serve listener -> connections
 func (s *Server) Serve(listener net.Listener) {
+	s.ctx, s.done = context.WithCancel(context.Background())
 	defer listener.Close()
-	for {
-		conn, err := listener.Accept()
-		if err != nil {
-			s.Logger.Error(err)
-			continue
+
+	newConns := make(chan net.Conn)
+
+	go func(l net.Listener, ss *Server) {
+		for {
+			c, err := l.Accept()
+			if err != nil {
+				if !ss.closed {
+					ss.Logger.Errorf("Error of accepting connections: %v", err)
+				}
+				return
+			}
+			newConns <- c
 		}
-		c := NewConnection(conn, s.Logger)
-		go c.Serve()
+	}(listener, s)
+
+	for {
+		select {
+		case <-s.ctx.Done():
+			s.wg.Wait()
+			return
+		case conn := <-newConns:
+			c := NewConnection(conn, s.Logger)
+			s.wg.Add(1)
+			go c.Serve(&s.wg)
+		}
 	}
+}
+
+//Stop server
+func (s *Server) Stop() {
+	s.closed = true
+	s.done()
 }

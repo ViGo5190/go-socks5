@@ -28,4 +28,4 @@ docker:
 travis:  test
 	echo "done all"
 
-pre: fmt lint vet test
+pre: fmt lint vet test bench
