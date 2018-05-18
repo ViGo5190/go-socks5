@@ -3,7 +3,7 @@ go: 1.10.2
 env: CGO_ENABLED=0
 script:
   - make travis
-  - make docker
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; make docker ; fi
 
 sudo: 'required'
 
@@ -13,6 +13,7 @@ services:
 os:
     - linux
     - osx
+
 matrix:
   include:
     - go: 1.10.2
@@ -21,7 +22,7 @@ before_install:
   - go get github.com/golang/lint/golint
 
 after_success:
-  - if [[ "$TRAVIS_BRANCH" == "master" ]]; then
+  - if [[ "$TRAVIS_OS_NAME" == "osx" && "$TRAVIS_BRANCH" == "master" ]]; then
       docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD ;
       make docker-push ;
     fi
