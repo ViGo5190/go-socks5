@@ -19,7 +19,7 @@ func main() {
 	lg.SetLevel(log.DebugLevel)
 
 	proxy := proxy2.Proxy{
-		Listen: "127.0.0.1:8008",
+		Listen: "0.0.0.0:8008",
 		Log:    lg,
 	}
 	proxy.Start()
