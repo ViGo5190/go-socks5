@@ -1,5 +1,6 @@
 all: test vet build
 GOFILES=`go list ./... | grep -v vendor`
+IMAGE := vigo5190/gosocks5
 
 test:
 	go test $(GOFILES)
@@ -23,9 +24,12 @@ lint:
 	golint $(GOFILES)
 
 docker:
-	docker build -t gosocks5 .
+	docker build -t $(IMAGE) .
 
-travis:  test
+docker-push:
+	docker push $(IMAGE)
+
+travis:  lint vet test
 	echo "done all"
 
 pre: fmt lint vet test bench

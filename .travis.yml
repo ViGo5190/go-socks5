@@ -1,12 +1,25 @@
 language: go
 go: 1.10.2
 env: CGO_ENABLED=0
-script: make travis
+script:
+  - make travis
+  - make docker
 
-sudo: false
+sudo: 'required'
+
+services:
+  - 'docker'
+
 os:
     - linux
     - osx
 matrix:
   include:
     - go: 1.10.2
+
+
+after_success:
+  - if [[ "$TRAVIS_BRANCH" == "master" ]]; then
+      docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD ;
+      make docker-push ;
+    fi
