@@ -2,7 +2,6 @@ package proxy
 
 import (
 	"bytes"
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -27,8 +26,7 @@ func TestProxyOK(t *testing.T) {
 		t.Errorf("Error on creating listener: %v", err)
 	}
 
-	lg := log.New()
-	s := &Server{Logger: lg}
+	s := &Server{}
 	go s.Serve(l)
 	defer s.Stop()
 
@@ -73,8 +71,7 @@ func BenchmarkProxy_Start(b *testing.B) {
 		b.Errorf("Error on creating listener: %v", err)
 	}
 
-	lg := log.New()
-	s := &Server{Logger: lg}
+	s := &Server{}
 	go s.Serve(l)
 
 	proxyURL, err := url.Parse("socks5://" + l.Addr().String())

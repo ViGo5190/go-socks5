@@ -1,11 +1,11 @@
 package proxy
 
 import (
-	"net"
-
 	"context"
-	log "github.com/sirupsen/logrus"
+	"net"
 	"sync"
+
+	"github.com/rs/zerolog/log"
 )
 
 //ServerProxifier inteface for proxy runner
@@ -16,7 +16,6 @@ type ServerProxifier interface {
 
 //Server container for data
 type Server struct {
-	Logger *log.Logger
 	ctx    context.Context
 	done   context.CancelFunc
 	closed bool
@@ -45,7 +44,7 @@ func (s *Server) Serve(listener net.Listener) {
 			c, err := l.Accept()
 			if err != nil {
 				if !ss.closed {
-					ss.Logger.Errorf("Error of accepting connections: %v", err)
+					log.Error().Msgf("Error of accepting connections: %v", err)
 				}
 				return
 			}
@@ -59,7 +58,7 @@ func (s *Server) Serve(listener net.Listener) {
 			s.wg.Wait()
 			return
 		case conn := <-newConns:
-			c := NewConnection(conn, s.Logger)
+			c := NewConnection(conn)
 			s.wg.Add(1)
 			go c.Serve(&s.wg)
 		}

@@ -1,26 +1,30 @@
 package main
 
 import (
-	log "github.com/sirupsen/logrus"
+	"flag"
+
+	"github.com/rs/zerolog/log"
 	proxy2 "github.com/vigo5190/go-socks5/proxy"
 )
 
 func main() {
-	customFormatter := new(log.TextFormatter)
-	customFormatter.TimestampFormat = "2006-01-02 15:04:05"
-	customFormatter.FullTimestamp = true
 
-	lg := log.New()
-	lg.Formatter = customFormatter
+	port := flag.String("port", "8008", "listen port")
+	listenAddr := flag.String("addr", "0.0.0.0", "listen addr")
+	flag.Parse()
 
-	lg.Info("vigo5190/go-socks5 Starter")
-	defer lg.Info("vigo5190/go-socks5 Stop")
+	//customFormatter := new(log.TextFormatter)
+	//customFormatter.TimestampFormat = "2006-01-02 15:04:05"
+	//customFormatter.FullTimestamp = true
 
-	lg.SetLevel(log.DebugLevel)
+	//lg := log.New()
+	//lg.Formatter = customFormatter
+
+	log.Info().Msg("vigo5190/go-socks5 Started")
+	defer log.Info().Msg("vigo5190/go-socks5 Stop")
 
 	proxy := proxy2.Proxy{
-		Listen: "0.0.0.0:8008",
-		Log:    lg,
+		Listen: *listenAddr + ":" + *port,
 	}
 	proxy.Start()
 }

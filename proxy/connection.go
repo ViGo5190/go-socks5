@@ -5,7 +5,7 @@ import (
 	"context"
 	"encoding/binary"
 	"errors"
-	log "github.com/sirupsen/logrus"
+	"github.com/rs/zerolog/log"
 	"io"
 	"net"
 	"sync"
@@ -23,21 +23,19 @@ const (
 
 //Connection container for data
 type Connection struct {
-	conn   net.Conn
-	ctx    *context.Context
-	logger *log.Logger
+	conn net.Conn
+	ctx  *context.Context
 
 	ver     byte
 	methods []byte
 }
 
 //NewConnection return new connection
-func NewConnection(conn net.Conn, logger *log.Logger) *Connection {
+func NewConnection(conn net.Conn) *Connection {
 	ctx := context.Background()
 	return &Connection{
-		conn:   conn,
-		ctx:    &ctx,
-		logger: logger,
+		conn: conn,
+		ctx:  &ctx,
 	}
 }
 
@@ -47,24 +45,24 @@ func (c *Connection) Serve(wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	if err := binary.Read(c.conn, binary.BigEndian, &c.ver); err != nil {
-		c.logger.Errorf("Error on read data from connection : %v", err)
+		log.Error().Msgf("Error on read data from connection : %v", err)
 		return
 	}
 
 	if c.ver != socks5Ver {
 		err := errors.New("unsupported protocol version")
-		c.logger.Error(err)
+		log.Error().Err(err)
 		return
 	}
 
 	if err := c.handshake(); err != nil {
-		c.logger.Error(err)
+		log.Error().Err(err)
 		return
 	}
 
 	err := c.cmd()
 	if err != nil {
-		c.logger.Errorf("Connection.cmd error: %v", err)
+		log.Error().Msgf("Connection.cmd error: %v", err)
 	}
 }
 
@@ -93,9 +91,6 @@ func (c *Connection) handshake() (err error) {
 }
 
 func (c *Connection) handleNoAuth() (err error) {
-	c.logger.Debug("handleNoAuth")
-	c.logger.Debug(c.conn.RemoteAddr().String())
-
 	remAddrstring := c.conn.RemoteAddr().String()
 
 	_, _, err = net.SplitHostPort(remAddrstring)
@@ -133,7 +128,6 @@ func (c *Connection) cmd() (err error) {
 		return c.writeErrorResponce(r, rsp)
 	}
 
-	c.logger.Info("done")
 	return
 }
 

@@ -12,3 +12,18 @@ How to use
     docker pull vigo5190/gosocks5
     docker run -d -p 5190:8008 vigo5190/gosocks5
 ```
+
+How to use (not docker)
+------------------------
+
+Build:
+
+```bash
+    make
+```
+
+Run:
+
+```bash
+    ./go-socks5 -port=8009 -addr=0.0.0.0
+```
