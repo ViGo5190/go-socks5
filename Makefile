@@ -1,6 +1,7 @@
 all: test vet build
 GOFILES=`go list ./... | grep -v vendor`
 IMAGE := vigo5190/gosocks5
+TAG=latest
 
 test:
 	go test $(GOFILES)
@@ -26,8 +27,11 @@ lint:
 docker:
 	docker build -t $(IMAGE) .
 
+docker-tag:
+	docker tag $(IMAGE):latest $(IMAGE):$(TAG)
+
 docker-push:
-	docker push $(IMAGE)
+	docker push $(IMAGE):$(TAG)
 
 travis:  lint vet test
 	echo "done all"

@@ -25,3 +25,8 @@ after_success:
       docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD ;
       make docker-push ;
     fi
+  - if [[ "$TRAVIS_TAG" ]]; then
+      docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD ;
+      make docker-tag TAG=$TRAVIS_TAG ;
+      make docker-push TAG=$TRAVIS_TAG ;
+    fi
