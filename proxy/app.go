@@ -6,7 +6,7 @@ import (
 
 //Proxy is main struct for all magic
 type Proxy struct {
-	Listen string
+	Listen string `toml:"listen"`
 }
 
 //Start method for start proxy

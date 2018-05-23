@@ -3,28 +3,26 @@ package main
 import (
 	"flag"
 
+	"github.com/BurntSushi/toml"
 	"github.com/rs/zerolog/log"
+
 	proxy2 "github.com/vigo5190/go-socks5/proxy"
 )
 
 func main() {
-
-	port := flag.String("port", "8008", "listen port")
-	listenAddr := flag.String("addr", "0.0.0.0", "listen addr")
-	flag.Parse()
-
-	//customFormatter := new(log.TextFormatter)
-	//customFormatter.TimestampFormat = "2006-01-02 15:04:05"
-	//customFormatter.FullTimestamp = true
-
-	//lg := log.New()
-	//lg.Formatter = customFormatter
-
 	log.Info().Msg("vigo5190/go-socks5 Started")
 	defer log.Info().Msg("vigo5190/go-socks5 Stop")
 
-	proxy := proxy2.Proxy{
-		Listen: *listenAddr + ":" + *port,
+	cfgFile := flag.String("c", "config.toml", "config file")
+
+	flag.Parse()
+
+	proxy := proxy2.Proxy{}
+
+	if _, err := toml.DecodeFile(*cfgFile, &proxy); err != nil {
+		log.Error().Err(err)
+		panic(err)
 	}
+
 	proxy.Start()
 }
