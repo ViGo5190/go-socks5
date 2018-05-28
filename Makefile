@@ -24,6 +24,9 @@ vet:
 lint:
 	golint $(GOFILES)
 
+metalint:
+	gometalinter  ./...
+
 docker:
 	docker build -t $(IMAGE) .
 
@@ -36,4 +39,4 @@ docker-push:
 travis:  lint vet test
 	echo "done all"
 
-pre: fmt lint vet test bench
+pre: fmt lint vet metalint test bench

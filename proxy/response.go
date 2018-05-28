@@ -19,7 +19,7 @@ type Rsps struct {
 }
 
 var (
-	errRspServerMsg            = errors.New("general error")
+	//errRspServerMsg            = errors.New("general error")
 	errRspCommandNotSupportMsg = errors.New("command not support")
 	errRspAddressToShort       = errors.New("address to short")
 	errRspAddressToLong        = errors.New("address to long")
@@ -61,7 +61,8 @@ func (r *Rsps) Bytes() (buf []byte, err error) {
 	buf = append(buf, 0, 0)
 
 	binary.BigEndian.PutUint16(buf[len(buf)-2:], r.port)
-	return
+
+	return buf, nil
 }
 
 func (r *Rsps) parseAddr(addr string) (err error) {
@@ -90,5 +91,6 @@ func (r *Rsps) parseAddr(addr string) (err error) {
 		return errRspEmptyPort
 	}
 	r.port = uint16(prt)
-	return
+
+	return nil
 }

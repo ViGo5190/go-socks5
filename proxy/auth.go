@@ -3,21 +3,30 @@ package proxy
 import (
 	"crypto/sha1"
 	"encoding/base64"
-	"sync"
 	"hash"
+	"sync"
 )
 
-type Auther interface {
-	Auth(login, pass string) bool
+//Authorizer interface for auth
+type Authorizer interface {
+	AuthLoginPassword(login string, pass []byte) bool
+	ShouldAuth() bool
 }
 
+//Auth container for auth info
 type Auth struct {
 	AuthEnable bool
 	Users      map[string]string
-	Shapool    sync.Pool
+	shapool    sync.Pool
 }
 
-func (p *Auth) Auth(login, pass string) bool {
+//ShouldAuth return true if aith enable
+func (p *Auth) ShouldAuth() bool {
+	return p.AuthEnable
+}
+
+//AuthLoginPassword return true if auth enable and login/password corrected
+func (p *Auth) AuthLoginPassword(login string, pass []byte) bool {
 	if !p.AuthEnable {
 		return true
 	}
@@ -33,17 +42,18 @@ func (p *Auth) Auth(login, pass string) bool {
 	return hashedPass == spass
 }
 
-func (p *Auth) hashSha(password string) string {
-	s := p.Shapool.Get()
+func (p *Auth) hashSha(password []byte) string {
+	s := p.shapool.Get()
 	if s == nil {
 		s = sha1.New()
 	}
 
 	ss := s.(hash.Hash)
+	defer ss.Reset()
+	defer p.shapool.Put(ss)
 
-	ss.Write([]byte(password))
-	passwordSum := []byte(ss.Sum(nil))
-	ss.Reset()
-	p.Shapool.Put(s)
+	ss.Write(password)
+	passwordSum := ss.Sum(nil)
+
 	return base64.StdEncoding.EncodeToString(passwordSum)
 }

@@ -96,5 +96,5 @@ func (r *Rqst) fromReader(src io.Reader) (err error) {
 		return
 	}
 
-	return
+	return nil
 }

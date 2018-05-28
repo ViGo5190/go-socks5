@@ -13,17 +13,35 @@ How to use
     docker run -d -p 5190:8008 vigo5190/gosocks5
 ```
 
-How to use (not docker)
-------------------------
-
-Build:
+How to build (local)
+----
 
 ```bash
     make
 ```
 
-Run:
 
+Configuration
+--------------
+
+By default your app run on `0.0.0.0:8008` without auth
+
+How to get password :
 ```bash
-    ./go-socks5 -port=8009 -addr=0.0.0.0
+    htpasswd -nbs  yourUsername yourPassword
+```
+
+You will get something like : `yourUsername:{SHA}pNvEyEKjh5XJ9cGgtK0l0WiuwmM=`
+You need part after `:{SHA}`. for this example its `pNvEyEKjh5XJ9cGgtK0l0WiuwmM=
+`
+
+Example:
+
+```toml
+listen ="0.0.0.0:8008"
+
+auth = true
+[[users]]
+    login = "vigo5190"
+    pass = "Ys23Ag/5IOWqZCw9QGaVDdHwH00="
 ```
