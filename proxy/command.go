@@ -73,7 +73,7 @@ func (c *Command) connect() (rsp byte, err error) {
 
 	c.proxy()
 
-	return
+	return rspSuccess, nil
 }
 
 func (c *Command) proxy() {

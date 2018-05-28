@@ -16,10 +16,12 @@ type ServerProxifier interface {
 
 //Server container for data
 type Server struct {
+	auth   Authorizer
 	ctx    context.Context
 	done   context.CancelFunc
 	closed bool
 	wg     sync.WaitGroup
+	connSP sync.Pool
 }
 
 //ListenAndServe create listener and serve
@@ -58,9 +60,23 @@ func (s *Server) Serve(listener net.Listener) {
 			s.wg.Wait()
 			return
 		case conn := <-newConns:
-			c := NewConnection(conn)
+			newConnection := s.connSP.Get()
+			if newConnection == nil {
+				newConnection = Connection{
+					auth: s.auth,
+				}
+			}
+			cc := newConnection.(Connection)
+
+			cc.conn = conn
+
 			s.wg.Add(1)
-			go c.Serve(&s.wg)
+			go func(swg *sync.WaitGroup) {
+				defer swg.Done()
+				defer s.connSP.Put(cc)
+				cc.Serve()
+				cc.Reset()
+			}(&s.wg)
 		}
 	}
 }
