@@ -25,7 +25,7 @@ lint:
 	golint $(GOFILES)
 
 metalint:
-	gometalinter  ./...
+	gometalinter  $(GOFILES)
 
 docker:
 	docker build -t $(IMAGE) .
